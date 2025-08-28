@@ -1,0 +1,7 @@
+node_modules/
+client/
+coverage/
+uploads/
+*.json
+*.md
+.git/

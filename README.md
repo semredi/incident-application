@@ -153,6 +153,39 @@ cd client
 npm start    # React development server with hot reload
 ```
 
+## Testing
+
+### Backend API Tests
+```bash
+npm test           # Run all tests
+npm run test:watch # Run tests in watch mode
+```
+
+### Frontend Component Tests
+```bash
+cd client
+npm test           # Run React tests in watch mode
+npm run test:coverage # Run tests with coverage report
+```
+
+## Code Quality
+
+### Linting and Formatting
+```bash
+npm run lint       # Check for linting errors
+npm run lint:fix   # Fix auto-fixable linting errors
+npm run format     # Format code with Prettier
+npm run format:check # Check if code is properly formatted
+```
+
+### Test Coverage
+The project includes comprehensive API tests covering:
+- GET /api/incidents - List incidents
+- POST /api/incidents - Create incidents
+- Validation for required fields
+- Error handling for invalid data
+- File upload functionality
+
 ## Notes
 
 - This is a local development application

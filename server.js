@@ -20,28 +20,31 @@ if (!fs.existsSync(uploadsDir)) {
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
+  destination(req, file, cb) {
     cb(null, uploadsDir);
   },
-  filename: function (req, file, cb) {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
-  }
+  filename(req, file, cb) {
+    const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+    cb(
+      null,
+      `${file.fieldname}-${uniqueSuffix}${path.extname(file.originalname)}`
+    );
+  },
 });
 
-const upload = multer({ 
-  storage: storage,
+const upload = multer({
+  storage,
   limits: {
-    fileSize: 5 * 1024 * 1024 // 5MB limit
+    fileSize: 5 * 1024 * 1024, // 5MB limit
   },
-  fileFilter: function (req, file, cb) {
+  fileFilter(req, file, cb) {
     // Accept images only
     if (file.mimetype.startsWith('image/')) {
       cb(null, true);
     } else {
       cb(new Error('Only image files are allowed!'), false);
     }
-  }
+  },
 });
 
 // Data file path
@@ -80,7 +83,9 @@ app.get('/api/incidents', (req, res) => {
   try {
     const incidents = readIncidents();
     // Sort by created time (latest first)
-    const sortedIncidents = incidents.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    const sortedIncidents = incidents.sort(
+      (a, b) => new Date(b.created_at) - new Date(a.created_at)
+    );
     res.json(sortedIncidents);
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch incidents' });
@@ -91,23 +96,23 @@ app.get('/api/incidents', (req, res) => {
 app.post('/api/incidents', upload.single('image'), (req, res) => {
   try {
     const { title, description, incident_type, location } = req.body;
-    
+
     // Validation
     if (!title || !incident_type) {
-      return res.status(400).json({ 
-        error: 'Title and incident_type are required fields' 
+      return res.status(400).json({
+        error: 'Title and incident_type are required fields',
       });
     }
 
     const validIncidentTypes = ['Fire', 'Smoke', 'Emergency'];
     if (!validIncidentTypes.includes(incident_type)) {
-      return res.status(400).json({ 
-        error: 'Invalid incident_type. Must be one of: Fire, Smoke, Emergency' 
+      return res.status(400).json({
+        error: 'Invalid incident_type. Must be one of: Fire, Smoke, Emergency',
       });
     }
 
     const incidents = readIncidents();
-    
+
     const newIncident = {
       id: Date.now().toString(),
       title: title.trim(),
@@ -115,24 +120,24 @@ app.post('/api/incidents', upload.single('image'), (req, res) => {
       incident_type,
       location: location ? location.trim() : '',
       image: req.file ? req.file.filename : null,
-      created_at: new Date().toISOString()
+      created_at: new Date().toISOString(),
     };
 
     incidents.push(newIncident);
     writeIncidents(incidents);
 
-    res.status(201).json(newIncident);
+    return res.status(201).json(newIncident);
   } catch (error) {
     console.error('Error creating incident:', error);
-    res.status(500).json({ error: 'Failed to create incident' });
+    return res.status(500).json({ error: 'Failed to create incident' });
   }
 });
 
 // Serve uploaded images
 app.get('/uploads/:filename', (req, res) => {
-  const filename = req.params.filename;
+  const { filename } = req.params;
   const filepath = path.join(uploadsDir, filename);
-  
+
   if (fs.existsSync(filepath)) {
     res.sendFile(filepath);
   } else {
@@ -143,13 +148,18 @@ app.get('/uploads/:filename', (req, res) => {
 // Serve React app in production
 if (process.env.NODE_ENV === 'production') {
   app.use(express.static(path.join(__dirname, 'client/build')));
-  
+
   app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'client/build', 'index.html'));
   });
 }
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-  console.log(`API available at http://localhost:${PORT}/api`);
-});
+// Only start the server if this file is run directly
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+    console.log(`API available at http://localhost:${PORT}/api`);
+  });
+}
+
+module.exports = app;
