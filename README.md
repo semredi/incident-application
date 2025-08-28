@@ -186,10 +186,9 @@ The project includes comprehensive API tests covering:
 - Error handling for invalid data
 - File upload functionality
 
-## Notes
+## Possible Improvments for Better Functionalities in the future
 
-- This is a local development application
-- No database setup required
-- Images are stored as files on the server
-- The application is designed to be simple and functional without polish
-- CORS is enabled for local development
+- We can add Search/Filtering in the incidents
+- Update funcionality for marking the status of each incident
+- CSV or Xlsx export functionality for simple data report
+- Some UI/UX improvments (Dark mode support, Rich text editor for detailed description ...)
